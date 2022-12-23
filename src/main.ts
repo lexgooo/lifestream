@@ -1,17 +1,16 @@
-import { Plugin } from 'obsidian';
+import { Command, Plugin } from 'obsidian';
 import LifestreamSettingTab from './libs/LifestreamSettingTab';
-import { LifestreamPluginSettings, DEFAULT_SETTINGS, COMMANDS } from './libs/config';
+import { LifestreamPluginSettings, DEFAULT_SETTINGS, generateCommands } from './libs/config';
 import { commandsRegister } from './libs/libs';
 
-
-export default class LifestramPlugin extends Plugin {
+export default class LifestreamPlugin extends Plugin {
 	settings: LifestreamPluginSettings;
 	commandsRegister = commandsRegister
 
 	async onload() {
 		await this.loadSettings();
-
-		this.commandsRegister(COMMANDS)
+    const commands: Command[] = generateCommands(this)
+		this.commandsRegister(commands)
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new LifestreamSettingTab(this.app, this));
