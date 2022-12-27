@@ -1,7 +1,8 @@
 import { Command } from "obsidian";
 import LifestreamPlugin from '../main';
-import { getContent, insertContent } from './libs'
+import { generateLogInit, getContent, insertContent } from './libs'
 
+export const CODE_BLOCK_NAME = 'lifestreamtable'
 export enum FormElType {
 	输入框 = 'addText',
 	文本框 = 'addTextArea',
@@ -15,14 +16,15 @@ export enum RegxType {
 export interface TableColumn {
 	key: string,
 	title: string,
-	type: FormElType,
+  setable: boolean,
+	type?: FormElType,
 	options?: Record<string, string>,
 	regx?: RegxType,
 }
 export interface LifestreamPluginSettings {
 	logPath: string;
   // logTableHeader: string;
-	logTableHeaderConf: TableColumn[],
+	logTableHeader: TableColumn[],
   accountBookPath: string;
   inboxPath: string;
 }
@@ -38,11 +40,22 @@ export enum ContentType {
 }
 
 export const DEFAULT_SETTINGS: LifestreamPluginSettings = {
-	logPath: '/database/log.md',
-	logTableHeaderConf: [
+	logPath: '/database/log.table.json',
+	logTableHeader: [
+    {
+      key: 'date',
+      title: '日期',
+      setable: false,
+    },
+    {
+      key: 'time',
+      title: '时间',
+      setable: false,
+    },
 		{
 			key: 'tag',
 			title: '标签',
+      setable: true,
 			type: FormElType['下拉框'],
 			options: {
 				'工作': '工作',
@@ -55,84 +68,55 @@ export const DEFAULT_SETTINGS: LifestreamPluginSettings = {
 		{
 			key: 'title',
 			title: '标题',
+      setable: true,
 			type: FormElType['输入框']
 		},
 		{
 			key: 'desc',
 			title: '描述',
+      setable: true,
 			type: FormElType['文本框']
 		},
 		{
 			key: 'spent',
 			title: '用时(min)',
+      setable: false,
 			type: FormElType['输入框'],
 			regx: RegxType['只能是数字'],
-		}
+		},
+    {
+      key: 'timestamp',
+      title: '时间戳',
+      setable: false
+    },
 	],
-  accountBookPath: '/database/accountBood.md',
-  inboxPath: '/database/inbox.md'
+  accountBookPath: '/database/accountBood.table.json',
+  inboxPath: '/database/inbox.table.json'
 }
 
 export function generateCommands (self: LifestreamPlugin): Command[] {
   return [
-  {
-		// This adds a simple command that can be triggered anywhere
-		id: 'open-sample-modal-simple',
-		name: 'Open sample modal (simple)',
-		callback: () => {
-			// new SampleModal(this.app).open();
-		}
-	},
-  {
-		// This adds an editor command that can perform some operation on the current editor instance
-		id: 'sample-editor-command',
-		name: 'Sample editor command',
-		// editorCallback: (editor: Editor, view: MarkdownView) => {
-		// 	console.log(editor.getSelection());
-		// 	editor.replaceSelection('Sample Editor Command');
-		// }
-	},
-  {
-		// This adds a complex command that can check whether the current state of the app allows execution of the command
-		id: 'open-sample-modal-complex',
-		name: 'Open sample modal (complex)',
-		checkCallback: (checking: boolean) => {
-			// Conditions to check
-		// 	const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-		// 	if (markdownView) {
-		// 		// If checking is true, we're simply "checking" if the command can be run.
-		// 		// If checking is false, then we want to actually perform the operation.
-		// 		if (!checking) {
-		// 			new SampleModal(this.app).open();
-		// 		}
-
-		// 		// This command will only show up in Command Palette when the check function returns true
-		// 		return true;
-		// 	}
-		}
-	},
-  {
-    id: 'lifestream-log-add-item',
-    name: 'Lifestream 新增一条日志',
-    callback: async () => {
-      if (!self) return
-      const { settings, app } = self
-      const { vault } = app
-      const { logPath, logTableHeaderConf } = settings
-      const folder = logPath.split('/')?.slice(0, -1).join('/')
-      const res = await vault.exists(logPath)
-			// 初始化库文件
-      if (!res) {
-				const len = logTableHeaderConf.length || 0
-				const logTableHeader = `| 日期 | 时间 | ${logTableHeaderConf?.map(item => item.title)?.join(' |')} | 时间戳 | \n| --- | --- | ${new Array(len)?.fill(' --- |')?.join('')} --- |`
-        await vault.createFolder(folder)
-        await vault.create(logPath, logTableHeader)
-      }
-			// const visible = this.activeDocument?.visibilityState === 'visible'
-			getContent(ContentType['日志'], app, logTableHeaderConf, (res: Result) => {
-				insertContent(self, ContentType['日志'], res)
-			})
-    },
-  }
-]
+    {
+      id: 'lifestream-log-add-item',
+      name: 'Lifestream 新增一条日志',
+      callback: async () => {
+        if (!self) return
+        const { settings, app } = self
+        const { vault } = app
+        const { logPath, logTableHeader } = settings
+        const folder = logPath.split('/')?.slice(0, -1).join('/')
+        const res = await vault.exists(logPath)
+			  // 初始化库文件
+        if (!res) {
+          const initRes = generateLogInit(logTableHeader)
+          await vault.createFolder(folder)
+          await vault.create(logPath, initRes)
+        }
+			  // const visible = this.activeDocument?.visibilityState === 'visible'
+			  getContent(ContentType['日志'], app, logTableHeader, (res: Result) => {
+				  insertContent(self, ContentType['日志'], res)
+			  })
+      },
+    }
+  ]
 }

@@ -32,8 +32,10 @@ export class LogModal extends LifestreamModal {
 	onOpen() {
 		const { contentEl } = this
 		contentEl.createEl('h1', '你刚做了什么？')
-		this.config?.forEach((item: TableColumn) => {
+    const conf = this.config.filter(item => item.type)
+		conf?.forEach((item: TableColumn) => {
 			const { key, title, type, regx, options } = item
+      if (!type) return
 			new Setting(contentEl)
 				.setName(title)[type](comp => {
 					if(comp instanceof DropdownComponent && options) {
