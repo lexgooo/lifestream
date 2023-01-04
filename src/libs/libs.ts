@@ -72,14 +72,17 @@ function insertLogContent (self: LifestreamPlugin, result: Result) {
   const date = now.format('YYYY-MM-DD')
   const time = now.format('HH:mm')
   result = {
+    ...result,
     date,
     time,
-    ...result,
     timestamp
   }
-  const { data } = require(path)
-  data.push(result)
-  // TODO 不能修改原始文件
+  const res = require(path)
+  res.data.push(result)
+  fs.writeFile(path, JSON.stringify(res), err => {
+    console.error(err)
+    return
+  })
 }
 
 export function insertContent (self: LifestreamPlugin, type: ContentType, result: Result) {

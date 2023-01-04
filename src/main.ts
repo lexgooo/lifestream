@@ -1,7 +1,8 @@
-import { Command, Plugin } from 'obsidian';
+import { Command, Plugin, WorkspaceLeaf } from 'obsidian';
 import LifestreamSettingTab from './libs/LifestreamSettingTab';
 import { LifestreamPluginSettings, DEFAULT_SETTINGS, generateCommands } from './libs/config';
 import { commandsRegister, codeBlockRegister } from './libs/libs';
+import { TableJsonView, VIEW_TYPE_TABLE_JSON } from './libs/view';
 
 export default class LifestreamPlugin extends Plugin {
 	settings: LifestreamPluginSettings;
@@ -16,6 +17,13 @@ export default class LifestreamPlugin extends Plugin {
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new LifestreamSettingTab(this.app, this));
+		
+		// 注册json转表格的视图
+		this.registerView(
+			VIEW_TYPE_TABLE_JSON,
+			(leaf: WorkspaceLeaf) => new TableJsonView(leaf)
+		)
+		this.registerExtensions(['json'], VIEW_TYPE_TABLE_JSON)
 	}
 
 	onunload() {

@@ -40,7 +40,7 @@ export enum ContentType {
 }
 
 export const DEFAULT_SETTINGS: LifestreamPluginSettings = {
-	logPath: '/database/log.table.json',
+	logPath: '/database/log.json',
 	logTableHeader: [
     {
       key: 'date',
@@ -90,8 +90,8 @@ export const DEFAULT_SETTINGS: LifestreamPluginSettings = {
       setable: false
     },
 	],
-  accountBookPath: '/database/accountBood.table.json',
-  inboxPath: '/database/inbox.table.json'
+  accountBookPath: '/database/accountBood.json',
+  inboxPath: '/database/inbox.json'
 }
 
 export function generateCommands (self: LifestreamPlugin): Command[] {
