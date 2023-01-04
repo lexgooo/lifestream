@@ -54,14 +54,18 @@ export class TableJsonView extends TextFileView {
 
     const headTr = headEl.createEl('tr')
     this.tableColumns.forEach((column, i) => {
-      headTr.createEl('th', { text: column.title })
+      const { hide, title } = column
+      if (hide) return
+      headTr.createEl('th', { text: title })
     })
 
     this.tableData.forEach((item, i) => {
       const tr = bodyEl.createEl('tr')
       this.tableColumns.forEach((column, i) => {
-        if (!Object.keys(item).includes(column.key)) return
-        tr.createEl('td', { text: item[column.key]+'' })
+        const { hide, key } = column
+        if (hide) return
+        if (!Object.keys(item).includes(key)) return
+        tr.createEl('td', { text: item[key]+'' })
       })
     })
   }

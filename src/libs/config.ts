@@ -17,6 +17,7 @@ export interface TableColumn {
 	key: string,
 	title: string,
   setable: boolean,
+	hide?: boolean,
 	type?: FormElType,
 	options?: Record<string, string>,
 	regx?: RegxType,
@@ -87,7 +88,8 @@ export const DEFAULT_SETTINGS: LifestreamPluginSettings = {
     {
       key: 'timestamp',
       title: '时间戳',
-      setable: false
+      setable: false,
+			hide: true
     },
 	],
   accountBookPath: '/database/accountBood.json',
@@ -104,6 +106,8 @@ export function generateCommands (self: LifestreamPlugin): Command[] {
         const { settings, app } = self
         const { vault } = app
         const { logPath, logTableHeader } = settings
+				console.log(logTableHeader)
+				debugger
         const folder = logPath.split('/')?.slice(0, -1).join('/')
         const res = await vault.exists(logPath)
 			  // 初始化库文件
